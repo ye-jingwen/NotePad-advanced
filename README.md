@@ -46,7 +46,7 @@ This is an AndroidStudio rebuild of google SDK sample NotePad
 ## 5.运行截图
 ![github](https://github.com/ye-jingwen/NotePad_timestamp/blob/master/Image/NotePad_timestamp.png "github")
 
-===================================================================================================
+========================================================================================================================================================
 # 笔记颜色排序
         参考 https://blog.csdn.net/douzajun/article/details/77669658
 # 一.笔记背景颜色
