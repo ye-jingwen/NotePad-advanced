@@ -481,8 +481,19 @@ public class NoteEditor extends Activity {
         case R.id.menu_color:
             changeColor();
             break;
+        //新增22 导出笔记选项
+        case R.id.menu_output:
+            outputNote();
+            break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    //新增23 跳转导出笔记的activity，将uri信息传到新的activity
+    private final void outputNote() {
+        Intent intent = new Intent(null, mUri);
+        intent.setClass(NoteEditor.this, OutputText.class);
+        NoteEditor.this.startActivity(intent);
     }
 
     //新增13 跳转改变颜色的activity，将uri信息传到新的activity

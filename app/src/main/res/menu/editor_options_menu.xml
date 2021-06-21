@@ -17,4 +17,7 @@
         android:title="Color"
         android:icon="@drawable/ic_menu_color"
        android:showAsAction="always"/>
+    <!-- 新增21 导出笔记的选项 -->
+    <item android:id="@+id/menu_output"
+        android:title="Output" />
 </menu>

@@ -46,7 +46,7 @@ This is an AndroidStudio rebuild of google SDK sample NotePad
 ## 5.运行截图
 ![github](https://github.com/ye-jingwen/NotePad_timestamp/blob/master/Image/NotePad_timestamp.png "github")
 
-===================================================================================================
+============================================================================================================================
 # 笔记颜色排序
         参考 https://blog.csdn.net/douzajun/article/details/77669658
 # 一.笔记背景颜色
@@ -383,8 +383,156 @@ This is an AndroidStudio rebuild of google SDK sample NotePad
         private Cursor cursor;
         private String[] dataColumns = { NotePad.Notes.COLUMN_NAME_TITLE ,  NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE } ;
         private int[] viewIDs = { android.R.id.text1 , R.id.text1_time };
-## 4.
-## 5.
+============================================================================================================================
+# 导出笔记
+## 1.先在菜单文件中添加一个导出笔记的选项，editor_options_menu.xml：
+        <item android:id="@+id/menu_output"
+            android:title="@string/menu_output" />
+## 2.在NoteEditor中找到onOptionsItemSelected()方法，在菜单的switch中添加：
+        //导出笔记选项
+           case R.id.menu_output:
+                outputNote();
+                break;
+## 3.在NoteEditor中添加函数outputNote()：
+        //跳转导出笔记的activity，将uri信息传到新的activity
+            private final void outputNote() {
+                Intent intent = new Intent(null,mUri);
+                intent.setClass(NoteEditor.this,OutputText.class);
+                NoteEditor.this.startActivity(intent);
+            }
+## 4.在此之前，要对选择导出文件界面进行布局，新建布局output_text.xml，垂直线性布局放置EditText和Button，并创建OutputText的Acitvity，用来选择颜色。：
+        <?xml version="1.0" encoding="utf-8"?>
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingLeft="6dip"
+            android:paddingRight="6dip"
+            android:paddingBottom="3dip">
+            <EditText android:id="@+id/output_name"
+                android:maxLines="1"
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="15dp"
+                android:layout_width="wrap_content"
+                android:ems="25"
+                android:layout_height="wrap_content"
+                android:autoText="true"
+                android:capitalize="sentences"
+                android:scrollHorizontally="true" />
+            <Button android:id="@+id/output_ok"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:text="@string/output_ok"
+                android:onClick="OutputOk" />
+        </LinearLayout>
+        
+        public class OutputText extends Activity {
+           //要使用的数据库中笔记的信息
+            private static final String[] PROJECTION = new String[] {
+                    NotePad.Notes._ID, // 0
+                    NotePad.Notes.COLUMN_NAME_TITLE, // 1
+                    NotePad.Notes.COLUMN_NAME_NOTE, // 2
+                    NotePad.Notes.COLUMN_NAME_CREATE_DATE, // 3
+                    NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE, // 4
+            };
+            //读取出的值放入这些变量
+            private String TITLE;
+            private String NOTE;
+            private String CREATE_DATE;
+            private String MODIFICATION_DATE;
+            //读取该笔记信息
+            private Cursor mCursor;
+            //导出文件的名字
+            private EditText mName;
+            //NoteEditor传入的uri，用于从数据库查出该笔记
+            private Uri mUri;
+            //关于返回与保存按钮的一个特殊标记，返回的话不执行导出，点击按钮才导出
+            private boolean flag = false;
+            private static final int COLUMN_INDEX_TITLE = 1;
+            public void onCreate(Bundle savedInstanceState) {
+                super.onCreate(savedInstanceState);
+                setContentView(R.layout.output_text);
+                mUri = getIntent().getData();
+                mCursor = managedQuery(
+                        mUri,        // The URI for the note that is to be retrieved.
+                        PROJECTION,  // The columns to retrieve
+                        null,        // No selection criteria are used, so no where columns are needed.
+                        null,        // No where columns are used, so no where values are needed.
+                        null         // No sort order is needed.
+                );
+                mName = (EditText) findViewById(R.id.output_name);
+            }
+            @Override
+            protected void onResume(){
+                super.onResume();
+                if (mCursor != null) {
+                    // The Cursor was just retrieved, so its index is set to one record *before* the first
+                    // record retrieved. This moves it to the first record.
+                    mCursor.moveToFirst();
+                    //编辑框默认的文件名为标题，可自行更改
+                    mName.setText(mCursor.getString(COLUMN_INDEX_TITLE));
+                }
+            }
+            @Override
+            protected void onPause() {
+                super.onPause();
+                if (mCursor != null) {
+                //从mCursor读取对应值
+                    TITLE = mCursor.getString(mCursor.getColumnIndex(NotePad.Notes.COLUMN_NAME_TITLE));
+                    NOTE = mCursor.getString(mCursor.getColumnIndex(NotePad.Notes.COLUMN_NAME_NOTE));
+                    CREATE_DATE = mCursor.getString(mCursor.getColumnIndex(NotePad.Notes.COLUMN_NAME_CREATE_DATE));
+                    MODIFICATION_DATE = mCursor.getString(mCursor.getColumnIndex(NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE));
+                    //flag在点击导出按钮时会设置为true，执行写文件
+                    if (flag == true) {
+                        write();
+                    }
+                    flag = false;
+                }
+            }
+            public void OutputOk(View v){
+                flag = true;
+                finish();
+            }
+            private void write()
+            {
+                try
+                {
+                    // 如果手机插入了SD卡，而且应用程序具有访问SD的权限
+                    if (Environment.getExternalStorageState().equals(
+                            Environment.MEDIA_MOUNTED)) {
+                        // 获取SD卡的目录
+                        File sdCardDir = Environment.getExternalStorageDirectory();
+                        //创建文件目录
+                        File targetFile = new File(sdCardDir.getCanonicalPath() + "/" + mName.getText() + ".txt");
+                        //写文件
+                        PrintWriter ps = new PrintWriter(new OutputStreamWriter(new FileOutputStream(targetFile), "UTF-8"));
+                        ps.println(TITLE);
+                        ps.println(NOTE);
+                        ps.println("创建时间：" + CREATE_DATE);
+                        ps.println("最后一次修改时间：" + MODIFICATION_DATE);
+                        ps.close();
+                        Toast.makeText(this, "保存成功,保存位置：" + sdCardDir.getCanonicalPath() + "/" + mName.getText() + ".txt", Toast.LENGTH_LONG).show();
+                    }
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+## 5.在AndroidManifest.xml中将这个Acitvity主题定义为对话框样式，并且加入权限：
+        <!--添加导出activity-->
+                <activity android:name="OutputText"
+                    android:label="@string/output_name"
+                    android:theme="@android:style/Theme.Holo.Dialog"
+                    android:windowSoftInputMode="stateVisible">
+                </activity>
+       
+       <!-- 在SD卡中创建与删除文件权限 -->
+           <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"/>
+           <!-- 向SD卡写入数据权限 -->
+           <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 ## 6.
 ## 7.
 ## 8.
