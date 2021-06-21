@@ -46,7 +46,11 @@ This is an AndroidStudio rebuild of google SDK sample NotePad
 ## 5.运行截图
 ![github](https://github.com/ye-jingwen/NotePad_timestamp/blob/master/Image/NotePad_timestamp.png "github")
 
+<<<<<<< HEAD
 ============================================================================================================================
+=======
+========================================================================================================================================================
+>>>>>>> aa037b6328581c5698e9bc299e0721b5d9a71029
 # 笔记颜色排序
         参考 https://blog.csdn.net/douzajun/article/details/77669658
 # 一.笔记背景颜色
@@ -533,8 +537,4 @@ This is an AndroidStudio rebuild of google SDK sample NotePad
            <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"/>
            <!-- 向SD卡写入数据权限 -->
            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-## 6.
-## 7.
-## 8.
-## 9.
-## 10.
+
